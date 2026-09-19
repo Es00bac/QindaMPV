@@ -13,12 +13,15 @@ ActionSpec action(const char *id, const char *menuId, const char *menuLabel,
                   bool checkable = false, bool destructive = false)
 {
     ActionSpec spec;
-    spec.id = QString::fromLatin1(id);
-    spec.menuId = QString::fromLatin1(menuId);
-    spec.menuLabel = QString::fromLatin1(menuLabel);
+    // AGENT-GUARD: labels contain non-ASCII ("Open File…"); fromLatin1 would
+    // double-encode the UTF-8 source bytes (the "…" showed as "â€¦" on the
+    // exported dbusmenu). Ids are ASCII and unaffected either way.
+    spec.id = QString::fromUtf8(id);
+    spec.menuId = QString::fromUtf8(menuId);
+    spec.menuLabel = QString::fromUtf8(menuLabel);
     spec.menuOrder = menuOrder;
-    spec.label = QString::fromLatin1(label);
-    spec.shortcut = QKeySequence(QString::fromLatin1(shortcut));
+    spec.label = QString::fromUtf8(label);
+    spec.shortcut = QKeySequence(QString::fromUtf8(shortcut));
     spec.order = order;
     spec.checkable = checkable;
     spec.destructive = destructive;
