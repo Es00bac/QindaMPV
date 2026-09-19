@@ -13,7 +13,7 @@ DESCRIPTION="QindaMPV - mpv media player with QindaTK UI and global menu for the
 HOMEPAGE="https://github.com/Es00bac/QindaQt"
 EGIT_REPO_URI="file:///home/cabewse/work_space/QindaMPV"
 # v0.1.0 — pin the release commit here at release time.
-EGIT_COMMIT="347e932ad237deb66e73419e98ebba7e48a87217"
+EGIT_COMMIT="9fcda3f4e950d0a89297c414405cc97b4a70ac36"
 
 LICENSE="GPL-3+"
 SLOT="0"
