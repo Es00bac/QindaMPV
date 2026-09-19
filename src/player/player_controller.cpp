@@ -77,6 +77,8 @@ void PlayerController::initializeMpv()
         m_mpv.free(version);
     }
 
+    m_mpv.requestLogMessages(m_handle, "warn");
+
     m_mpv.observeProperty(m_handle, ObserveTimePos, "time-pos", MPV_FORMAT_DOUBLE);
     m_mpv.observeProperty(m_handle, ObserveDuration, "duration", MPV_FORMAT_DOUBLE);
     m_mpv.observeProperty(m_handle, ObservePause, "pause", MPV_FORMAT_FLAG);
@@ -113,6 +115,29 @@ void PlayerController::drainMpvEvents()
                                      *static_cast<mpv_event_property *>(event->data));
             }
             break;
+        case QQMPV_MPV_EVENT_LOG_MESSAGE:
+            if (event->data != nullptr) {
+                const auto *message = static_cast<mpv_event_log_message *>(event->data);
+                qWarning("qqmpv: mpv/%s: %s", message->prefix,
+                         message->text != nullptr ? message->text : "");
+            }
+            break;
+        case QQMPV_MPV_EVENT_FILE_LOADED: {
+            // Diagnostic: without a real video track the render item stays
+            // black even though playback time advances (e.g. audio-only).
+            int64_t width = 0;
+            int64_t height = 0;
+            m_mpv.getProperty(m_handle, "video-params/w", MPV_FORMAT_INT64, &width);
+            m_mpv.getProperty(m_handle, "video-params/h", MPV_FORMAT_INT64, &height);
+            char *vo = m_mpv.getPropertyString(m_handle, "current-vo");
+            qInfo("qqmpv: file loaded, video=%lldx%lld vo=%s",
+                  static_cast<long long>(width), static_cast<long long>(height),
+                  vo != nullptr ? vo : "(none)");
+            if (vo != nullptr) {
+                m_mpv.free(vo);
+            }
+            break;
+        }
         case QQMPV_MPV_EVENT_START_FILE:
             if (!m_loaded) {
                 m_loaded = true;
@@ -274,20 +299,37 @@ void PlayerController::setDoubleProperty(const char *name, double value)
     }
 }
 
-void PlayerController::openUrl(const QUrl &url)
+void PlayerController::noteRenderContextReady()
 {
-    if (m_handle == nullptr || url.isEmpty()) {
+    if (m_videoReady) {
         return;
     }
-    const QByteArray target = url.isLocalFile()
-        ? QDir::toNativeSeparators(url.toLocalFile()).toUtf8()
-        : url.toString(QUrl::FullyEncoded).toUtf8();
-    const char *args[] = {"loadfile", target.constData(), nullptr};
-    command(args);
+    m_videoReady = true;
+    emit videoReadyChanged();
+    if (!m_pendingPlaylist.isEmpty()) {
+        const QList<QUrl> queued = m_pendingPlaylist;
+        m_pendingPlaylist.clear();
+        openPlaylist(queued);
+    }
+}
+
+void PlayerController::openUrl(const QUrl &url)
+{
+    openPlaylist({url});
 }
 
 void PlayerController::openPlaylist(const QList<QUrl> &urls)
 {
+    if (m_handle == nullptr) {
+        return;
+    }
+    // AGENT-GUARD: loading before the render context exists makes mpv drop
+    // the video track for that file for good (vo/libmpv: "No render context
+    // set"). Queue behind noteRenderContextReady instead.
+    if (!m_videoReady) {
+        m_pendingPlaylist = urls;
+        return;
+    }
     bool first = true;
     for (const QUrl &url : urls) {
         if (url.isEmpty()) {

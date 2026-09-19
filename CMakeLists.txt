@@ -59,6 +59,11 @@ qt_add_executable(qqmpv
 qt_add_qml_module(qqmpv
     URI QindaMPV
     VERSION 1.0
+    # AGENT-GUARD: the engine resolves module QML from qrc via the default
+    # /qt/qml import root. Without this prefix the resources land at qrc:/,
+    # which only the build tree's filesystem qmldir masks — the installed
+    # binary then fails with "module QindaMPV contains no type Main".
+    RESOURCE_PREFIX /qt/qml
     QML_FILES
         qml/Main.qml
         qml/PlayerMenuBar.qml

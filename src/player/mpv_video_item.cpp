@@ -111,6 +111,12 @@ private:
             qWarning("qqmpv: mpv_render_context_create failed");
             return;
         }
+        qInfo("qqmpv: mpv render context created (api=%s)", apiType);
+        // The controller queues loadfile calls behind this point (mpv drops
+        // the video track of any file loaded earlier). Posted queued: the
+        // controller lives on the GUI thread.
+        QMetaObject::invokeMethod(m_controller, &PlayerController::noteRenderContextReady,
+                                  Qt::QueuedConnection);
         // createRenderer() hands us the item as const; the object itself is
         // never const, and update() below needs the mutable pointer.
         m_itemGuard = const_cast<MpvVideoItem *>(m_item);

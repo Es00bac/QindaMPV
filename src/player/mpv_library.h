@@ -33,6 +33,7 @@ struct MpvLibrary {
     qqmpv_mpv_unobserve_property_fn unobserveProperty = nullptr;
     qqmpv_mpv_wait_event_fn waitEvent = nullptr;
     qqmpv_mpv_set_wakeup_callback_fn setWakeupCallback = nullptr;
+    qqmpv_mpv_request_log_messages_fn requestLogMessages = nullptr;
     qqmpv_mpv_free_fn free = nullptr;
 
     // render_gl API.

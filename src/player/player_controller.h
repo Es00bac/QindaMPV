@@ -43,10 +43,14 @@ class PlayerController : public QObject {
     Q_PROPERTY(int playlistPos READ playlistPos NOTIFY playlistChanged FINAL)
     Q_PROPERTY(int playlistCount READ playlistCount NOTIFY playlistChanged FINAL)
     Q_PROPERTY(bool subtitlesVisible READ subtitlesVisible NOTIFY subtitlesVisibleChanged FINAL)
+    // True once the render item has created the mpv render context. mpv's
+    // libmpv VO dies permanently for a file loaded while no render context
+    // exists ("No render context set"), so openUrl/openPlaylist queue
+    // behind this instead of racing the first scene-graph frame.
+    Q_PROPERTY(bool videoReady READ videoReady NOTIFY videoReadyChanged FINAL)
     // Window-state mirror: QML owns the actual visibility switch; the
     // property only keeps the exported checkable menu action truthful.
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged FINAL)
-
 public:
     explicit PlayerController(QObject *parent = nullptr);
     ~PlayerController() override;
@@ -67,6 +71,7 @@ public:
     [[nodiscard]] int playlistPos() const { return m_playlistPos; }
     [[nodiscard]] int playlistCount() const { return m_playlistCount; }
     [[nodiscard]] bool subtitlesVisible() const { return m_subtitlesVisible; }
+    [[nodiscard]] bool videoReady() const { return m_videoReady; }
     [[nodiscard]] bool fullscreen() const { return m_fullscreen; }
 
     void setFullscreen(bool fullscreen);
@@ -78,6 +83,9 @@ public:
     [[nodiscard]] const MpvLibrary &mpv() const { return m_mpv; }
 
 public slots:
+    // Posted (queued) by the render renderer after mpv_render_context_create
+    // succeeds; flushes any playlist queued behind the first frame.
+    void noteRenderContextReady();
     void openUrl(const QUrl &url);
     void openPlaylist(const QList<QUrl> &urls);
     void togglePause();
@@ -116,6 +124,7 @@ signals:
     void chapterChanged();
     void playlistChanged();
     void subtitlesVisibleChanged();
+    void videoReadyChanged();
     void fullscreenChanged();
 
     // UI requests the controller cannot honor itself (no window knowledge).
@@ -170,6 +179,8 @@ private:
     int m_playlistCount = 0;
     bool m_subtitlesVisible = true;
     bool m_fullscreen = false;
+    bool m_videoReady = false;
+    QList<QUrl> m_pendingPlaylist;
 
     // Coalesces wakeup-callback floods (any mpv thread) into one queued
     // event drain on the GUI thread.

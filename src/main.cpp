@@ -31,6 +31,7 @@
 #include <QUrl>
 
 #include <cstdio>
+#include <clocale>
 
 int main(int argc, char **argv)
 {
@@ -39,6 +40,9 @@ int main(int argc, char **argv)
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
     QGuiApplication application(argc, argv);
+    // Qt adopts the environment locale (LC_ALL ""); libmpv refuses to run
+    // under a non-C LC_NUMERIC and demands the client reset it.
+    std::setlocale(LC_NUMERIC, "C");
     QGuiApplication::setApplicationName(QStringLiteral("qqmpv"));
     QGuiApplication::setApplicationDisplayName(QStringLiteral("QindaMPV"));
     QGuiApplication::setOrganizationName(QStringLiteral("QindaQt"));
@@ -116,7 +120,9 @@ int main(int argc, char **argv)
                      window, &QQuickWindow::close);
     if (parser.isSet(QStringLiteral("screenshot"))) {
         const QString path = parser.value(QStringLiteral("screenshot"));
-        QTimer::singleShot(1500, window, [window, path]() {
+        const int delayMs = qEnvironmentVariableIntValue("QQMPV_SCREENSHOT_MS") > 0
+            ? qEnvironmentVariableIntValue("QQMPV_SCREENSHOT_MS") : 1500;
+        QTimer::singleShot(delayMs, window, [window, path]() {
             if (window->grabWindow().save(path)) {
                 std::fprintf(stdout, "screenshot=%s\n", qPrintable(path));
             } else {

@@ -37,6 +37,7 @@ bool resolveAll(QLibrary &library, MpvLibrary &out, QString &missingSymbol)
         {"mpv_unobserve_property", reinterpret_cast<void **>(&out.unobserveProperty)},
         {"mpv_wait_event", reinterpret_cast<void **>(&out.waitEvent)},
         {"mpv_set_wakeup_callback", reinterpret_cast<void **>(&out.setWakeupCallback)},
+        {"mpv_request_log_messages", reinterpret_cast<void **>(&out.requestLogMessages)},
         {"mpv_free", reinterpret_cast<void **>(&out.free)},
         {"mpv_render_context_create", reinterpret_cast<void **>(&out.renderContextCreate)},
         {"mpv_render_context_free", reinterpret_cast<void **>(&out.renderContextFree)},

@@ -43,6 +43,7 @@ typedef enum mpv_format {
 typedef enum qqmpv_mpv_event_id {
     QQMPV_MPV_EVENT_NONE             = 0,
     QQMPV_MPV_EVENT_SHUTDOWN         = 1,
+    QQMPV_MPV_EVENT_LOG_MESSAGE      = 2,
     QQMPV_MPV_EVENT_START_FILE       = 6,
     QQMPV_MPV_EVENT_END_FILE         = 7,
     QQMPV_MPV_EVENT_FILE_LOADED      = 8,
@@ -75,6 +76,12 @@ typedef struct mpv_event_end_file {
     int reason;
     int error;
 } mpv_event_end_file;
+
+typedef struct mpv_event_log_message {
+    const char *prefix;
+    const char *level;
+    const char *text;
+} mpv_event_log_message;
 
 typedef enum mpv_render_param_type {
     MPV_RENDER_PARAM_INVALID              = 0,
@@ -126,6 +133,7 @@ using qqmpv_mpv_observe_property_fn      = int (*)(mpv_handle *ctx, uint64_t rep
 using qqmpv_mpv_unobserve_property_fn    = int (*)(mpv_handle *ctx, uint64_t registered_reply_userdata);
 using qqmpv_mpv_wait_event_fn            = mpv_event *(*)(mpv_handle *ctx, double timeout);
 using qqmpv_mpv_set_wakeup_callback_fn   = void (*)(mpv_handle *ctx, void (*callback)(void *callback_ctx), void *callback_ctx);
+using qqmpv_mpv_request_log_messages_fn  = int (*)(mpv_handle *ctx, const char *min_level);
 using qqmpv_mpv_free_fn                  = void (*)(void *data);
 
 using qqmpv_mpv_render_context_create_fn = int (*)(mpv_render_context **res, mpv_handle *mpv, mpv_render_param *params);
