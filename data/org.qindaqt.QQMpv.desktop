@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=QindaMPV
+GenericName=Media Player
+Comment=mpv media player for the QindaQt desktop
+Exec=qqmpv %U
+Icon=qqmpv
+Terminal=false
+Categories=Qt;AudioVideo;Audio;Video;Player;TV;
+MimeType=video/mp4;video/x-matroska;video/webm;video/mpeg;video/x-msvideo;audio/mpeg;audio/flac;audio/ogg;
+Keywords=media;player;video;audio;mpv;
+StartupNotify=true
