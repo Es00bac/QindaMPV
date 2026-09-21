@@ -55,11 +55,9 @@ public:
             fbo->size().height(),
             0, // internal_format: 0 lets mpv pick (upstream qtquick example)
         };
-        int flipY = 1; // GL FBO origin is bottom-left, Qt textures top-left
         int blockForTargetTime = 0; // never stall the render thread on vsync
         mpv_render_param params[] = {
             {MPV_RENDER_PARAM_OPENGL_FBO, &fboSettings},
-            {MPV_RENDER_PARAM_FLIP_Y, &flipY},
             {MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME, &blockForTargetTime},
             {MPV_RENDER_PARAM_INVALID, nullptr},
         };
@@ -146,7 +144,10 @@ private:
 MpvVideoItem::MpvVideoItem(QQuickItem *parent)
     : QQuickFramebufferObject(parent)
 {
-    setMirrorVertically(false); // the renderer flips Y itself
+    // QQuickFramebufferObject presents OpenGL FBO textures in the expected
+    // orientation. Asking mpv to flip its output here turns the video upside
+    // down when Qt Quick samples that texture.
+    setMirrorVertically(false);
 }
 
 MpvVideoItem::~MpvVideoItem() = default;

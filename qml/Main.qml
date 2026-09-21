@@ -124,6 +124,9 @@ Tk.AppWindow {
         MouseArea {
             id: videoMouse
             anchors.fill: parent
+            // The idle state is earlier in the stacking order. Do not let
+            // this full-stage playback handler cover its Open buttons.
+            enabled: player.loaded
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
             cursorShape: chromeHidden ? Qt.BlankCursor : Qt.ArrowCursor
