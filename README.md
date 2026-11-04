@@ -4,6 +4,16 @@ A Qt6/QindaTK media player for the QindaQt desktop, built on mpv. The whole
 chrome — window, menus, transport island, dialogs — is native QindaTK QML;
 playback comes from libmpv, loaded at run time.
 
+## Screenshots
+
+The native player’s startup window, before opening media.
+
+[![QindaMPV — file and URL controls in the startup window](docs/screenshots/startup.png)](docs/screenshots/startup.png)
+
+QindaMPV — file and URL controls in the startup window.
+
+[Capture notes](docs/screenshots/README.md).
+
 ## Features
 
 - **mpv playback engine.** libmpv (`libmpv.so.2`) is resolved dynamically at
